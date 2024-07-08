@@ -15,8 +15,8 @@ from px4_msgs.msg import VtolVehicleStatus
 from px4_msgs.msg import VehicleCommand
 from px4_msgs.msg import OffboardControlMode
 from px4_msgs.msg import TrajectorySetpoint
-from px4_msgs.msg import GimbalManagerSetManualControl
-from std_msgs.msg import Bool
+from px4_msgs.msg import GimbalManagerSetManualControl #수정
+from std_msgs.msg import Bool #수정
 
 # import math, numpy
 import math
@@ -98,8 +98,9 @@ class VehicleController(Node):
         self.pturn_pos_trajectory = []
         self.pturn_vel_trajectory = []
 
+        #수정 gimbal angles
         self.gimbal_pitchangle = 0
-        self.gimbal_yawangle = 0
+        self.gimbal_yawangle = 0 
         """
         4. Create Subscribers
         """
@@ -125,20 +126,21 @@ class VehicleController(Node):
         self.trajectory_setpoint_publisher = self.create_publisher(
             TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile
         )
+        
         self.autolanding_publisher = self.create_publisher(
             Bool, 'auto_land_on', 10
-        )
+        )#수정
 
         self.gimbal_publisher = self.create_publisher(
             GimbalManagerSetManualControl, '/fmu/in/gimbal_manager_set_manual_control', qos_profile
-        )
+        )#수정
 
         """
         6. timer setup
         """
         self.offboard_heartbeat = self.create_timer(0.1, self.offboard_heartbeat_callback)
         self.main_timer = self.create_timer(0.5, self.main_timer_callback)
-        self.gimbal_timer = self.create_timer(0.5, self.gimbal_timer_callback)
+        self.gimbal_timer = self.create_timer(0.5, self.gimbal_timer_callback) #수정
 
         """
         7. takeoff and arm, flight starts!
@@ -413,6 +415,7 @@ class VehicleController(Node):
             if math.fabs(self.yaw - self.mission_yaw) < self.acceptance_heading_angle:
                 self.publish_trajectory_setpoint(position_sp = self.current_goal)
                 self.phase = 8
+        #수정
         elif self.phase == 8:
             self.gimbal_pitchangle = -math.pi/2
             self.gimbal_yawangle = self.yaw
@@ -420,7 +423,7 @@ class VehicleController(Node):
             ALmsg = Bool()
             ALmsg.data = True
             self.autolanding_publisher.publish(ALmsg)
-    
+    #수정
     def gimbal_timer_callback(self):
         gim_msg = GimbalManagerSetManualControl()
         gim_msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
